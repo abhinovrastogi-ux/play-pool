@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101613">
+  <title>Greenroom — Pool</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101613;
+      --panel: #191f1b;
+      --panel-soft: #202822;
+      --text: #f2f4ee;
+      --muted: #9ca89f;
+      --green: #9ff0c6;
+      --green-strong: #54d79a;
+      --line: rgba(255, 255, 255, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 50% -20%, rgba(60, 116, 77, .17), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, select, input { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      width: min(100% - 48px, 1420px);
+      margin: 0 auto;
+      padding: 26px 0 32px;
+    }
+
+    .topbar, .brand, .top-actions, .game-heading, .play-row, .control-head,
+    .power-label, .target-row, .footer-note {
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar { justify-content: space-between; margin-bottom: 34px; }
+    .brand { gap: 12px; }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(159, 240, 198, .3);
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgba(159, 240, 198, .15), rgba(159, 240, 198, .04));
+      color: var(--green);
+      font-size: 23px;
+      font-weight: 800;
+      box-shadow: 0 5px 24px rgba(84, 215, 154, .08);
+    }
+    .brand-copy { display: grid; gap: 2px; }
+    .brand-name { font-size: 15px; font-weight: 750; letter-spacing: .11em; }
+    .brand-sub { color: var(--muted); font-size: 11px; letter-spacing: .06em; }
+    .top-actions { gap: 9px; }
+    .online-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .025);
+      color: #c6d0c8;
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .04em;
+    }
+    .online-pill::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-strong);
+      box-shadow: 0 0 10px rgba(84, 215, 154, .65);
+      content: "";
+    }
+    .sound-toggle {
+      min-height: 36px;
+      padding: 0 11px;
+      border: 1px solid rgba(159, 240, 198, .2);
+      border-radius: 11px;
+      background: rgba(159, 240, 198, .055);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .055em;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .sound-toggle:hover, .sound-toggle[aria-pressed="true"] {
+      border-color: rgba(159, 240, 198, .42);
+      background: rgba(159, 240, 198, .12);
+    }
+
+    .game-heading {
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.045em; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .mode-wrap { display: grid; gap: 6px; min-width: 156px; }
+    .small-label {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    select {
+      min-height: 42px;
+      padding: 0 34px 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+    select:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--green-strong);
+      outline-offset: 3px;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 276px;
+      align-items: start;
+      gap: 18px;
+    }
+    .table-card {
+      overflow: hidden;
+      padding: 9px;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 21px;
+      background: linear-gradient(145deg, #262d28, #171c18 55%);
+      box-shadow: 0 22px 65px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .035);
+    }
+    .canvas-wrap {
+      overflow: hidden;
+      border-radius: 14px;
+      background: #126b50;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 25 / 14;
+      touch-action: none;
+    }
+    .play-row {
+      min-height: 56px;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 5px 8px 0;
+    }
+    .status-box { display: flex; align-items: center; gap: 9px; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      flex: none;
+      border-radius: 50%;
+      background: var(--green-strong);
+      box-shadow: 0 0 12px rgba(84, 215, 154, .48);
+    }
+    .status-copy { display: grid; gap: 3px; }
+    .status-copy strong { font-size: 10px; letter-spacing: .1em; }
+    .status-copy span { color: var(--muted); font-size: 10px; }
+    .key-hint { color: #87938b; font-size: 10px; white-space: nowrap; }
+    kbd {
+      padding: 3px 6px;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 5px;
+      color: #c8d1ca;
+      font: inherit;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: linear-gradient(145deg, rgba(31, 39, 33, .97), rgba(24, 30, 26, .98));
+      box-shadow: 0 12px 35px rgba(0, 0, 0, .12);
+    }
+    .control-head { justify-content: space-between; margin-bottom: 17px; }
+    .card-title { margin: 0; font-size: 13px; font-weight: 700; }
+    .icon-circle {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      place-items: center;
+      border: 1px solid rgba(159, 240, 198, .14);
+      border-radius: 10px;
+      color: var(--green);
+      font-size: 15px;
+    }
+    .power-label { justify-content: space-between; margin-bottom: 11px; }
+    .power-label span:first-child { color: #bac4bc; font-size: 11px; font-weight: 600; }
+    #power-value { color: var(--green); font-size: 12px; font-weight: 750; }
+    input[type="range"] {
+      width: 100%;
+      height: 5px;
+      margin: 2px 0 5px;
+      border-radius: 999px;
+      appearance: none;
+      background: linear-gradient(to right, var(--green-strong), #45544b);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      width: 17px;
+      height: 17px;
+      border: 3px solid #d9ffe9;
+      border-radius: 50%;
+      appearance: none;
+      background: #54d79a;
+      box-shadow: 0 0 0 4px rgba(84, 215, 154, .12);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border: 3px solid #d9ffe9;
+      border-radius: 50%;
+      background: #54d79a;
+      box-shadow: 0 0 0 4px rgba(84, 215, 154, .12);
+    }
+    .range-ends { display: flex; justify-content: space-between; color: #7e8981; font-size: 9px; }
+    .shoot-button {
+      display: flex;
+      width: 100%;
+      min-height: 49px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 17px;
+      border: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #b0f5cf, #69dca4);
+      color: #14251c;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .09em;
+      cursor: pointer;
+      transition: filter .15s, transform .15s, opacity .15s;
+      box-shadow: 0 7px 22px rgba(84, 215, 154, .16);
+    }
+    .shoot-button:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .shoot-button:active:not(:disabled) { transform: translateY(1px); }
+    .shoot-button:disabled { opacity: .45; cursor: not-allowed; }
+    .shoot-icon { font-size: 16px; }
+    .hint { margin: 11px 0 0; color: #8d9990; font-size: 10px; line-height: 1.55; }
+    .target-row {
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+    }
+    .target-row span:first-child { color: var(--muted); font-size: 10px; }
+    #target-name {
+      overflow: hidden;
+      color: #e0e9e2;
+      font-size: 10px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stats-card { padding-bottom: 14px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .stat {
+      padding: 11px;
+      border: 1px solid rgba(255, 255, 255, .055);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .025);
+    }
+    .stat-number { display: block; margin-bottom: 4px; font-size: 22px; font-weight: 750; letter-spacing: -.04em; }
+    .stat-label { color: var(--muted); font-size: 9px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+    .new-game {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 12px;
+      border: 1px solid rgba(255, 255, 255, .11);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .035);
+      color: #d6ded8;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .new-game:hover { border-color: rgba(159, 240, 198, .35); background: rgba(159, 240, 198, .07); }
+    .tip-card { display: flex; align-items: flex-start; gap: 10px; padding: 14px; }
+    .tip-icon { color: #f3ca72; font-size: 16px; }
+    .tip-card p { margin: 0; color: #aeb8b0; font-size: 10px; line-height: 1.55; }
+    .footer-note { justify-content: center; gap: 6px; margin-top: 17px; color: #78847b; font-size: 9px; letter-spacing: .035em; }
+    .footer-note span { color: var(--green); }
+
+    .toast {
+      position: fixed;
+      z-index: 2;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      left: 50%;
+      max-width: calc(100vw - 32px);
+      padding: 12px 17px;
+      transform: translate(-50%, 14px);
+      border: 1px solid rgba(159, 240, 198, .2);
+      border-radius: 999px;
+      background: rgba(26, 37, 30, .96);
+      color: #e6f5eb;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 9px 35px rgba(0, 0, 0, .35);
+      white-space: nowrap;
+    }
+    .toast.visible { transform: translate(-50%, 0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      .app { width: min(100% - 32px, 760px); padding-top: 19px; }
+      .topbar { margin-bottom: 27px; }
+      .game-layout { grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; }
+      .card { padding: 14px; }
+    }
+    @media (max-width: 680px) {
+      .app { width: calc(100% - 24px); padding: 14px 0 calc(22px + env(safe-area-inset-bottom)); }
+      .topbar { margin-bottom: 23px; }
+      .brand-mark { width: 37px; height: 37px; border-radius: 13px; }
+      .brand-name { font-size: 13px; }
+      .brand-sub { font-size: 10px; }
+      .online-pill { padding: 8px 9px; font-size: 9px; }
+      .sound-toggle { min-height: 34px; padding: 0 8px; font-size: 9px; }
+      .game-heading { align-items: flex-end; gap: 10px; margin-bottom: 13px; }
+      .subtitle { max-width: 210px; font-size: 11px; line-height: 1.4; }
+      .mode-wrap { min-width: 126px; }
+      select { min-height: 39px; padding-left: 10px; font-size: 11px; }
+      .game-layout { grid-template-columns: 1fr; gap: 11px; }
+      .table-card { padding: 6px; border-radius: 15px; }
+      .canvas-wrap { border-radius: 10px; }
+      .play-row { min-height: 51px; padding: 3px 5px 0; }
+      .key-hint { display: none; }
+      .side-panel { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .control-card { grid-row: span 2; }
+      .stats-card { padding: 14px; }
+      .stats-grid { gap: 6px; }
+      .stat { padding: 9px; }
+      .stat-number { font-size: 19px; }
+      .tip-card { min-height: 82px; padding: 12px; }
+      .footer-note { margin-top: 12px; font-size: 8px; }
+    }
+    @media (max-width: 390px) {
+      .brand-sub { display: none; }
+      .online-pill { font-size: 8px; }
+      .side-panel { grid-template-columns: 1fr; }
+      .control-card { grid-row: auto; }
+      .stats-card { order: 2; }
+      .tip-card { order: 3; min-height: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">8</div>
+        <div class="brand-copy">
+          <span class="brand-name">GREENROOM</span>
+          <span class="brand-sub">A little table time</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="online-pill">PRACTICE TABLE</div>
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false" aria-label="Turn sound effects on">♪ EFFECTS OFF</button>
+      </div>
+    </header>
+
+    <section class="game-heading" aria-label="Game settings">
+      <div>
+        <p class="eyebrow">Your table is ready</p>
+        <h1>Pool, at your pace.</h1>
+        <p class="subtitle">Line it up. Find your angle. Sink the shot.</p>
+      </div>
+      <label class="mode-wrap" for="game-mode">
+        <span class="small-label">Game mode</span>
+        <select id="game-mode" aria-label="Choose game mode">
+          <option value="practice">Practice · 15 balls</option>
+          <option value="8">8-ball</option>
+          <option value="9">9-ball</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="game-layout" aria-label="Pool game">
+      <div class="table-card">
+        <div class="canvas-wrap">
+          <canvas id="table" width="1000" height="560" aria-label="Pool table. Tap the table to aim and tap an object ball to select it."></canvas>
+        </div>
+        <div class="play-row">
+          <div class="status-box">
+            <span class="status-dot" aria-hidden="true"></span>
+            <div class="status-copy">
+              <strong id="status" aria-live="polite">YOUR TURN</strong>
+              <span>Drag on the table to set your aim</span>
+            </div>
+          </div>
+          <div class="key-hint"><kbd>←</kbd> <kbd>→</kbd> aim <span aria-hidden="true">·</span> <kbd>Space</kbd> shoot</div>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <section class="card control-card" aria-label="Shot controls">
+          <div class="control-head">
+            <h2 class="card-title">Shot controls</h2>
+            <span class="icon-circle" aria-hidden="true">↗</span>
+          </div>
+          <div class="power-label">
+            <span>Shot power</span>
+            <span id="power-value">55%</span>
+          </div>
+          <input id="power" type="range" min="10" max="100" value="55" aria-label="Shot power">
+          <div class="range-ends"><span>SOFT</span><span>FULL POWER</span></div>
+          <button class="shoot-button" id="shoot" type="button"><span class="shoot-icon" aria-hidden="true">➤</span> TAKE THE SHOT</button>
+          <p class="hint">Tap anywhere on the felt to aim. Select a ball for a target guide, then take your shot.</p>
+          <div class="target-row"><span>Selected ball</span><span id="target-name">Tap a ball to select</span></div>
+        </section>
+
+        <section class="card stats-card" aria-label="Game statistics">
+          <div class="control-head">
+            <h2 class="card-title">This game</h2>
+            <span class="small-label">SESSION</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat"><span class="stat-number" id="shot-count">00</span><span class="stat-label">Shots</span></div>
+            <div class="stat"><span class="stat-number" id="sunk-count">00</span><span class="stat-label">Pocketed</span></div>
+          </div>
+          <button class="new-game" id="new-game" type="button">↻ &nbsp; New rack</button>
+        </section>
+
+        <section class="card tip-card">
+          <span class="tip-icon" aria-hidden="true">✦</span>
+          <p><strong>Quick tip</strong><br>Tap a ball to mark your target. Use the arrow keys for tiny aim adjustments.</p>
+        </section>
+      </aside>
+    </section>
+
+    <div class="footer-note"><span>●</span> JUST YOU, THE TABLE, AND THE NEXT SHOT</div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="Dev_1.js"></script>
+</body>
+</html>
